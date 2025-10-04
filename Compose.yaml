@@ -1,0 +1,162 @@
+services:
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8089:8080
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey-go-ecommerce
+    ports:
+      - 6379:6379
+    command: ["valkey-server","--bind","0.0.0.0","--protected-mode","no"]
+
+  # docker run -d --hostname my-rabbit --name some-rabbit -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password rabbitmq:3-management
+  rabbitmq:
+    image: rabbitmq:4.1.1
+    container_name: rabbitmq-go-ecommerce
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file: .env.test
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+
+  gateway:
+    build: ./api-gateway
+    # env_file: go-api-gateway/.env.test
+    environment:
+      - GITHUB_CLIENT_ID=Ov23liMOIb9ImA8SWHH6
+      - GITHUB_CLIENT_SECRET=427efa4058bb1ba774caccbe4ef0f7699d4dd64a
+
+      - PROTOCOL=http
+      - PORT=:9765
+
+      - AUTH_URI=auth:10221
+      - CATALOG_URI=catalog:10222
+      - CART_URI=cart:10223
+      - INVENTORY_URI=inventory:10224
+      - ORDER_URI=order:10225
+      - PAYMENT_URI=payment:10226
+
+      - ROOT_PAGE_URI=http://localhost:9765/protected/
+      - LOGIN_URI=http://localhost:9765/v1/auth/oauth/github
+    ports:
+      - 9765:9765
+
+  auth:
+    build: ./auth
+    environment:
+      - AUTH_POSTGRES_URL=postgres://vlad:passwd@authdb:5432/test
+      - AUTH_PORT=:10221
+      - VALKEY_URL=valkey:6379
+      - AMQP_URL=amqp://vlad:passwd@rabbitmq:5672/
+      - AMQP_QUEUE=mail
+    # env_file: go-auth-service/.env.test
+  authdb:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    # ports:
+    #   - 80
+    ports:
+        - 5431:5432
+    environment:
+      - POSTGRES_USER=vlad
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=test
+    # env_file: go-auth-service/.env.test
+
+  cart:
+    build: ./cart
+    # env_file: go-cart/.env.test
+    environment:
+      - CART_POSTGRES_URL=postgres://vlad:passwd@cartdb:5432/test
+      - CART_PORT=:10223
+
+      - CATALOG_URL=catalog:10222
+      - ORDER_URL=order:10225
+  cartdb:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+        - 5434:5432
+    environment:
+      - POSTGRES_USER=vlad
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=test
+    # env_file: go-cart/.env.test
+
+  catalog:
+    build: ./catalog
+    # env_file: go-catalog/.env.test
+    environment:
+      - CATALOG_POSTGRES_URL=postgres://vlad:passwd@catalogdb:5432/test
+      - CATALOG_PORT=:10222
+
+  catalogdb:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+        - 5433:5432
+    environment:
+      - POSTGRES_USER=vlad
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=test
+    # env_file: go-catalog/.env.test
+
+  inventory:
+    build: ./inventory
+    # env_file: go-inventory/.env.test
+    environment:
+      - INVENTORY_POSTGRES_URL=postgres://vlad:passwd@inventorydb:5432/test
+      - INVENTORY_PORT=:10224
+
+  inventorydb:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+        - 5435:5432
+    environment:
+      - POSTGRES_USER=vlad
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=test
+    # env_file: go-inventory/.env.test
+
+  order:
+    build: ./order
+    # env_file: go-order/.env.test
+    environment:
+      - ORDER_POSTGRES_URL=postgres://vlad:passwd@orderdb:5432/test
+      - ORDER_PORT=:10225
+      - CATALOG_URL=catalog:10222
+      - INVENTORY_URL=inventory:10224
+  orderdb:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+        - 5436:5432
+    environment:
+      - POSTGRES_USER=vlad
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=test
+    # env_file: go-order/.env.test
+
+  payment:
+    build: ./payment
+    # env_file: go-payment/.env.test
+    environment:
+      - PAYMENT_PORT=:10226
+      - ORDER_URL=order:10225
+    env_file: .env.test

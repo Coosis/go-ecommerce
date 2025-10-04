@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+option go_package = "v1/auth";
+
+import "google/api/annotations.proto";
+
+// Classic register/login ------------------------------
+message CreateUserClassicRequest {
+  string type = 1;     // "email", "phone", ...
+  string value = 2;    // email or phone number
+  string password = 3; // password
+}
+message CreateUserClassicResponse {
+  string user_id = 1;
+  string challenge = 2; // Challenge for email/phone verification
+}
+message LoginClassicRequest {
+  string type = 1;     // "email", "phone", ...
+  string value = 2;    // email or phone number
+  string password = 3; // password
+}
+message AnswerChallengeRequest {
+  string challenge = 1; // Challenge to be answered
+  string answer = 2; // Answer to the challenge
+}
+
+// OAuth register/login --------------------------------
+message OAuthSessionRequest {
+  string provider = 1;
+  string user_id = 2;
+}
+// -----------------------------------------------------
+
+// Session ---------------------------------------------
+message Session {
+  string session_id = 1;
+}
+message VerifySessionRequest {
+  string session_id = 1; // Unique session identifier
+}
+message VerifySessionResponse {
+  string user_id = 1; // Unique identifier for the user associated with the session
+}
+message InvalidateSessionRequest {
+  string session_id = 1; // Unique session identifier
+}
+message InvalidateSessionResponse {
+  bool success = 1; // Indicates if the session was successfully invalidated
+}
+// -----------------------------------------------------
+
+service AuthService {
+  // User authentication
+  rpc Login(LoginClassicRequest) returns (Session) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+  }
+  rpc CreateUserClassic(CreateUserClassicRequest) returns (CreateUserClassicResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/create_user"
+      body: "*"
+    };
+  }
+  rpc AnswerChallenge(AnswerChallengeRequest) returns (Session) {
+    option (google.api.http) = {
+      post: "/v1/auth/answer_challenge"
+      body: "*"
+    };
+  }
+
+  // no api on gateway, OAuth provider redirect to gateway callback, 
+  // gateway extracts information then calls rpc
+  rpc GetOAuthSession(OAuthSessionRequest) returns (Session);
+
+  rpc VerifySession(VerifySessionRequest) returns (VerifySessionResponse);
+  rpc InvalidateSession(InvalidateSessionRequest) returns (InvalidateSessionResponse);
+}

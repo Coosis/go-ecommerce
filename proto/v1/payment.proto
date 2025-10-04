@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "v1/payment";
+
+import "google/api/annotations.proto";
+
+message CreatePaymentSessionRequest {
+  string order_id = 1;
+  string payment_sdk = 2; // e.g., "stripe", "paypal"
+  string metadata = 3; // JSON string with payment details
+}
+message CreatePaymentSessionResponse {
+  string payment = 1;
+  string status = 2; // e.g., "success", "failed"
+}
+
+service PaymentService {
+  rpc CreatePaymentSession(CreatePaymentSessionRequest) returns (CreatePaymentSessionResponse) {
+    option (google.api.http) = {
+      post: "/v1/payment/create-payment-session"
+      body: "*"
+    };
+  }
+}

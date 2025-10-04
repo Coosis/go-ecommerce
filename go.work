@@ -1,0 +1,11 @@
+go 1.24.2
+
+use (
+	./api-gateway
+	./auth
+	./cart
+	./catalog
+	./inventory
+	./order
+	./payment
+)

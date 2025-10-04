@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "migrations/*.sql"
+    gen:
+      go:
+        package: "auth"
+        out: "sqlc"
+        sql_package: "pgx/v5"
+        rename:
+          crypt: PasswordHash

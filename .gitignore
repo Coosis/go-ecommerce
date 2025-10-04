@@ -1,0 +1,12 @@
+.DS_Store
+api-gateway/tests
+api-gateway/internal/oauth/test
+
+*/sqlc
+*/internal/pb
+
+.env*
+rabbitmq.conf
+*.sh
+
+justfile

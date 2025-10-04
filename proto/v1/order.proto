@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+option go_package = "v1/order";
+
+message OrderItem {
+  string product_id = 1;
+  optional string product_name = 2;
+  string sku_id = 3;
+  optional string sku_name = 4;
+  int32 qty = 5;
+  optional int32 price_cents_snapshot = 6;
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  optional string email = 2;
+  optional string phone = 3;
+  optional string cart_id = 4;
+
+  string shipping_address = 5;
+  string billing_address = 6;
+
+  repeated OrderItem items = 7;
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+  string status = 2;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+message GetOrderResponse {
+  string order_id = 1;
+  string user_id = 2;
+  string email = 3;
+  string phone = 4;
+  string shipping_address = 5;
+  string billing_address = 6;
+  repeated OrderItem items = 7;
+  string status = 8; // e.g., "pending", "paid", "shipped", "completed", "canceled"
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  // used by payment service
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+}

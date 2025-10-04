@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+option go_package = "v1/catalog";
+
+import "google/api/annotations.proto";
+
+message GetProductRequest {
+  string product_id = 1;
+}
+
+message GetProductResponse {
+  string product_id = 1;
+  string name = 2;
+  string slug = 3;
+  string description = 4;
+  int32 price_cents = 5;
+  int64 price_version = 6;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  string slug = 2;
+  string description = 3;
+  int32 price_cents = 4;
+}
+
+message CreateProductResponse {
+  string product_id = 1;
+}
+
+message UpdateProductRequest {
+  string product_id = 1;
+  string name = 2;
+  string slug = 3;
+  string description = 4;
+  int32 price_cents = 5;
+}
+
+message UpdateProductResponse {
+  string product_id = 1;
+}
+
+message DeleteProductRequest {
+  string product_id = 1;
+}
+
+message DeleteProductResponse { 
+  bool success = 1;
+}
+
+message ListProductsRequest {
+  int32 page = 1;
+  int32 perpage = 2;
+  optional string category_slug = 3;
+  optional int32 min_price_cents = 4;
+  optional int32 max_price_cents = 5;
+}
+
+message ListProductsResponse {
+  repeated GetProductResponse products = 1;
+  int32 total_count = 2;
+}
+
+service CatalogService {
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/products/{product_id}"
+    };
+  }
+
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse) {
+    option (google.api.http) = {
+      post: "/v1/catalog/products"
+      body: "*"
+    };
+  }
+
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse) {
+    option (google.api.http) = {
+      patch: "/v1/catalog/products/{product_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse) {
+    option (google.api.http) = {
+      delete: "/v1/catalog/products/{product_id}"
+    };
+  }
+
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/products/list"
+    };
+  }
+}

@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+option go_package = "v1/inventory";
+
+import "google/api/annotations.proto";
+
+message GetAvailabilityRequest {
+  repeated string sku_ids = 1;
+  optional string warehouse_id = 2; // null for all
+  string product_id = 3;
+}
+message Availability {
+  string sku_id = 1;
+  string warehouse_id = 2;
+  int32 on_hand = 3;
+  int32 reserved = 4;
+  int32 available = 5;
+}
+message GetAvailabilityResponse {
+  repeated Availability availabilities = 1;
+}
+
+message ReserveItem {
+  string sku_id = 1;
+  int32 qty = 2;
+}
+message ReserveRequest {
+  string order_id = 1;
+  string warehouse_id = 2;
+  repeated ReserveItem items = 3;
+  int32 ttl_secs = 4;
+}
+message FailedReserveRequest {
+  string sku_id = 1;
+  string warehouse_id = 2;
+  string order_id = 3;
+  string reason = 4;
+}
+message ReserveResponse {
+  repeated string reservation_id = 1;
+  repeated FailedReserveRequest failed = 2;
+}
+
+message ReleaseRequest {
+  string reservation_id = 1;
+}
+message ReleaseResponse { }
+
+message CommitRequest {
+  string reservation_id = 1;
+}
+message CommitResponse { }
+
+message GetSkuCodeRequest {
+  string sku_id = 1;
+}
+message GetSkuCodeResponse {
+  string code = 1;
+}
+
+message GetAllSkusRequest {
+  string product_id = 1;
+}
+message GetAllSkusResponse {
+  repeated string sku_ids = 1;
+}
+
+message AdjustStockRequest {
+  string sku_id = 1;
+  string warehouse_id = 2;
+  int32 delta = 3;
+  string reason = 4;
+  string created_by = 5;
+}
+message AdjustStockResponse {
+  Availability availability = 1; // after adjustment
+}
+
+message AddSkuRequest {
+  string product_id = 1;
+  string code = 2;
+}
+message AddSkuResponse {
+  string sku_id = 1;
+}
+
+message AddWarehouseRequest {
+  string name = 1;
+  string code = 2;
+}
+message AddWarehouseResponse {
+  string warehouse_id = 1;
+}
+
+service InventoryService {
+  rpc GetAvailability(GetAvailabilityRequest) returns (GetAvailabilityResponse) {
+    option (google.api.http) = { get: "/v1/inventory/{product_id}/availability" };
+  }
+
+  rpc Reserve(ReserveRequest) returns (ReserveResponse) {
+    option (google.api.http) = { post: "/v1/inventory/reserve" body: "*" };
+  }
+
+  rpc Release(ReleaseRequest) returns (ReleaseResponse) {
+    option (google.api.http) = { post: "/v1/inventory/release" body: "*" };
+  }
+
+  rpc Commit(CommitRequest) returns (CommitResponse) {
+    option (google.api.http) = { post: "/v1/inventory/commit" body: "*" };
+  }
+
+  rpc GetAllSkus(GetAllSkusRequest) returns (GetAllSkusResponse) {
+    option (google.api.http) = { get: "/v1/inventory/skus" };
+  }
+
+  rpc GetSkuCode(GetSkuCodeRequest) returns (GetSkuCodeResponse);
+
+  // admin internal action
+  rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse) {
+    option (google.api.http) = { post: "/v1/inventory/adjust_stock" body: "*" };
+  }
+
+  rpc AddSku(AddSkuRequest) returns (AddSkuResponse) {
+    option (google.api.http) = { post: "/v1/inventory/add_sku" body: "*" };
+  }
+
+  rpc AddWarehouse(AddWarehouseRequest) returns (AddWarehouseResponse) {
+    option (google.api.http) = { post: "/v1/inventory/add_warehouse" body: "*" };
+  }
+}

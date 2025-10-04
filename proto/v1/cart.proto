@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option go_package = "v1/cart";
+
+import "google/api/annotations.proto";
+
+message CartItem {
+  string id = 1;
+  string product_id = 2;
+  string sku_id = 3;
+  int32 qty = 4;
+  int32 price_cents_snapshot = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message Cart {
+  string id = 1;
+  string user_id = 2;
+  int64 version = 3;
+  repeated CartItem items = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message GetMyCartRequest { }
+message GetMyCartResponse { Cart cart = 1; }
+
+message AddItemRequest { 
+  string product_id = 1;
+  string sku_id = 2;
+  int32 qty = 3; 
+}
+message AddItemResponse { Cart cart = 1; }
+
+message UpdateQtyRequest { string item_id = 1; int32 qty = 2; int64 expected_version = 3; }
+message UpdateQtyResponse { Cart cart = 1; }
+
+message RemoveItemRequest { string item_id = 1; int64 expected_version = 2; }
+message RemoveItemResponse { Cart cart = 1; }
+
+message CheckoutRequest {}
+message CheckoutResponse { string order_id = 1; }
+
+message GetActiveCartByUserIdRequest { string user_id = 1; }
+message GetActiveCartByUserIdResponse { Cart cart = 1; }
+
+message GetActiveCartByCartIdRequest { string cart_id = 1; }
+message GetActiveCartByCartIdResponse { Cart cart = 1; }
+
+message RotateAndMergeCartRequest { string user_id = 1; string old_cart_id = 2; }
+message RotateAndMergeCartResponse { Cart cart = 1; }
+
+service CartService {
+  rpc GetMyCart(GetMyCartRequest) returns (GetMyCartResponse) {
+    option (google.api.http) = { get: "/v1/cart" };
+  }
+  rpc AddItem(AddItemRequest) returns (AddItemResponse) {
+    option (google.api.http) = { post: "/v1/cart/items" body: "*" };
+  }
+  rpc UpdateQty(UpdateQtyRequest) returns (UpdateQtyResponse) {
+    option (google.api.http) = { put: "/v1/cart/items/{item_id}" body: "*" };
+  }
+  rpc RemoveItem(RemoveItemRequest) returns (RemoveItemResponse) {
+    option (google.api.http) = { delete: "/v1/cart/items/{item_id}" };
+  }
+  rpc Checkout(CheckoutRequest) returns (CheckoutResponse) {
+    option (google.api.http) = { post: "/v1/cart/checkout" };
+  }
+
+  rpc GetActiveCartByUserId(GetActiveCartByUserIdRequest) returns (GetActiveCartByUserIdResponse);
+  rpc GetActiveCartByCartId(GetActiveCartByCartIdRequest) returns (GetActiveCartByCartIdResponse);
+  rpc RotateAndMergeCart(RotateAndMergeCartRequest) returns (RotateAndMergeCartResponse);
+}
