@@ -13,11 +13,11 @@ import (
 )
 
 func main() {
-	ok, err := MigrateWithBackoff(context.Background(), internal.CATALOG_POSTGRES_URL)
+	ok, err := MigrateWithBackoff(context.Background(), internal.CatalogPostgresURL)
 	if !ok || err != nil {
 		panic("failed to run migrations: " + err.Error())
 	}
-	pool, err := ConnectPoolWithBackoff(context.Background(), internal.CATALOG_POSTGRES_URL)
+	pool, err := ConnectPoolWithBackoff(context.Background(), internal.CatalogPostgresURL)
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +29,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterCatalogServiceServer(grpcServer, s)
 
-	lis, err := net.Listen("tcp", internal.CATALOG_PORT)
+	lis, err := net.Listen("tcp", internal.CatalogPort)
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}

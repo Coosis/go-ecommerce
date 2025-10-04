@@ -28,8 +28,8 @@ func getEnv(key string) string {
 
 func init() {
 	// initialize environment variables
-	OrderURL = getEnv(OrderURL)
-	CatalogURL = getEnv(CatalogURL)
-	CartPort = getEnv(CartPort)
-	CartPostgresURL = getEnv(CartPostgresURL)
+	OrderURL = getEnv(ORDER_URL)
+	CatalogURL = getEnv(CATALOG_URL)
+	CartPort = getEnv(CART_PORT)
+	CartPostgresURL = getEnv(CART_POSTGRES_URL)
 }

@@ -101,7 +101,6 @@ services:
     environment:
       - CATALOG_POSTGRES_URL=postgres://vlad:passwd@catalogdb:5432/test
       - CATALOG_PORT=:10222
-
   catalogdb:
     image: postgres
     restart: always

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net"
-	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -30,12 +29,8 @@ func main() {
 		panic(err)
 	}
 
-	order_url := os.Getenv(internal.OrderURL)
-	if order_url == "" {
-		panic(internal.OrderURL + " environment variable is not set")
-	}
 	order_client, err := grpc.NewClient(
-		order_url,
+		internal.OrderURL,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

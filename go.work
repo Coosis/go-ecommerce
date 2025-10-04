@@ -5,6 +5,7 @@ use (
 	./auth
 	./cart
 	./catalog
+	./frontend
 	./inventory
 	./order
 	./payment
